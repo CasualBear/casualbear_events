@@ -1,6 +1,7 @@
 const { Event } = require("../app/models");
 const multer = require("multer");
 const router = require("express").Router();
+const path = require("path");
 
 // Set up Multer for handling file uploads
 const storage = multer.diskStorage({
@@ -9,7 +10,11 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + "-" + uniqueSuffix); // Set the filename for the uploaded file
+    const fileName = file.fieldname + "-" + uniqueSuffix; // Set the filename for the uploaded file
+    const fullPath = path.join(__dirname, "..", "uploads", fileName); // Get the full path by joining the parent directory and the file name
+    cb(null, fileName);
+    console.log("Full Path:", fullPath);
+    req.fullPath = fullPath; // Store the full path in the request object
   },
 });
 
@@ -23,10 +28,10 @@ router.post("/upload-event", upload.single("iconFile"), async (req, res) => {
       name: req.body.name,
       description: req.body.description,
       selectedColor: req.body.selectedColor,
-      iconFile: req.file.filename, // Store the filename in the database
+      iconFile: req.fullPath, // Store the filename in the database
     });
 
-    res.status(201).json({ event });
+    res.status(201).json(event);
   } catch (error) {
     console.error("Error creating event:", error);
     res.status(500).json({ error: "Failed to create event" });
