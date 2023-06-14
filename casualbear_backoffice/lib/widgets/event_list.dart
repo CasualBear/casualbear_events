@@ -17,16 +17,18 @@ class EventList extends StatefulWidget {
 class _EventListState extends State<EventList> {
   List<Event> eventList = [];
 
-  void addItemToList() {
+  void addOrEditItemToList(Event? event) {
     showDialog(
         context: context,
         builder: (BuildContext context) {
-          return CreateEventDialog(onSave: (event) {
-            setState(() {
-              eventList.add(
-                  Event(event.id, event.name, event.description, event.selectedColor, event.iconFile, event.createdAt));
-            });
-          });
+          return CreateEventDialog(
+              event: event,
+              onSave: (event) {
+                setState(() {
+                  eventList.add(Event(
+                      event.id, event.name, event.description, event.selectedColor, event.iconFile, event.createdAt));
+                });
+              });
         });
   }
 
@@ -50,7 +52,7 @@ class _EventListState extends State<EventList> {
                     style: TextStyle(color: Colors.white),
                   ),
                   onPressed: () {
-                    addItemToList();
+                    addOrEditItemToList(null);
                   }),
             )
           ]),
@@ -192,21 +194,26 @@ class _EventListState extends State<EventList> {
                             const SizedBox(height: 10),
                             Row(
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 10),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        'Editar'.toUpperCase(),
-                                        style: TextStyle(
-                                            decoration: TextDecoration.underline,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Theme.of(context).primaryColor),
-                                      ),
-                                      const SizedBox(width: 5),
-                                      Icon(Icons.edit, color: Theme.of(context).primaryColor)
-                                    ],
+                                GestureDetector(
+                                  onTap: () {
+                                    addOrEditItemToList(item);
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 10),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          'Editar'.toUpperCase(),
+                                          style: TextStyle(
+                                              decoration: TextDecoration.underline,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: Theme.of(context).primaryColor),
+                                        ),
+                                        const SizedBox(width: 5),
+                                        Icon(Icons.edit, color: Theme.of(context).primaryColor)
+                                      ],
+                                    ),
                                   ),
                                 ),
                                 Padding(
@@ -237,10 +244,5 @@ class _EventListState extends State<EventList> {
         ],
       ),
     );
-  }
-
-  int getColor(int color) {
-    int result = (0xff << 24) | color;
-    return result;
   }
 }

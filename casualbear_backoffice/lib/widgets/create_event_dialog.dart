@@ -9,9 +9,11 @@ import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
 import 'dart:typed_data';
 
+// ignore: must_be_immutable
 class CreateEventDialog extends StatefulWidget {
   final Function(Event event) onSave;
-  const CreateEventDialog({Key? key, required this.onSave}) : super(key: key);
+  Event? event;
+  CreateEventDialog({Key? key, required this.onSave, this.event}) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
@@ -24,6 +26,17 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
   String description = '';
   File? selectedImage;
   bool isImageProcessing = false;
+
+  @override
+  void initState() {
+    if (widget.event != null) {
+      name = widget.event!.name;
+      selectedColor = Color(widget.event!.selectedColor);
+      description = widget.event!.description;
+      selectedImage = widget.event!.iconFile;
+    }
+    super.initState();
+  }
 
   Future<void> openImagePicker() async {
     final FileUploadInputElement uploadInput = FileUploadInputElement();
@@ -112,6 +125,7 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
         child: Column(
           children: [
             TextField(
+              controller: TextEditingController()..text = name,
               decoration: const InputDecoration(
                 labelText: 'Name',
               ),
@@ -164,6 +178,7 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
             ),
             const SizedBox(height: 16),
             TextField(
+              controller: TextEditingController()..text = description,
               decoration: const InputDecoration(
                 labelText: 'Description',
               ),

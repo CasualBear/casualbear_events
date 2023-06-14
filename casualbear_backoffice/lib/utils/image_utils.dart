@@ -5,6 +5,11 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+int getColor(int color) {
+  int result = (0xff << 24) | color;
+  return result;
+}
+
 Widget buildImage(File image) {
   return FutureBuilder<Uint8List>(
     future: convertFileToUint8List(image),
