@@ -1,10 +1,10 @@
 /*module.exports = {
-  username: 'b83301fc6bb868',
-  password: '39e4302f',
-  database: 'heroku_48a3780b9a679fe',
-  host: 'eu-cdbr-west-03.cleardb.net',
-  dialect: 'mysql',
-}*/
+  username: "b10571c8b7eb6b",
+  password: "71d5db00",
+  database: "heroku_3ec8089098ad708",
+  host: "eu-cdbr-west-03.cleardb.net",
+  dialect: "mysql",
+};*/
 
 module.exports = {
   username: "root",

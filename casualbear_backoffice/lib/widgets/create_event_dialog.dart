@@ -1,13 +1,10 @@
 import 'dart:async';
 import 'dart:html';
-import 'dart:convert';
+import 'package:aws_s3_upload/aws_s3_upload.dart';
 import 'package:casualbear_backoffice/models/event.dart';
-import 'package:casualbear_backoffice/utils/image_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
-import 'dart:typed_data';
 
 // ignore: must_be_immutable
 class CreateEventDialog extends StatefulWidget {
@@ -24,7 +21,8 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
   String name = '';
   Color selectedColor = Colors.blue;
   String description = '';
-  File? selectedImage;
+  String? rawUrlFile;
+  String? filePath;
   bool isImageProcessing = false;
 
   @override
@@ -33,7 +31,7 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
       name = widget.event!.name;
       selectedColor = Color(widget.event!.selectedColor);
       description = widget.event!.description;
-      selectedImage = widget.event!.iconFile;
+      rawUrlFile = widget.event!.rawUrlFile;
     }
     super.initState();
   }
@@ -44,38 +42,9 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
 
     uploadInput.onChange.listen((e) async {
       final file = uploadInput.files!.first;
-      final reader = FileReader();
-
-      reader.readAsDataUrl(file);
-
-      setState(() {
-        selectedImage = null;
-        isImageProcessing = true;
-      });
-
-      await reader.onLoadEnd.first;
-
-      final imageData = reader.result as String;
-      final base64Data = imageData.replaceFirst(RegExp(r'data:image/[^;]+;base64,'), '');
-
-      final compressedImage = await compute(compressImage, base64Data);
-
-      setState(() {
-        selectedImage = compressedImage;
-        isImageProcessing = false;
-      });
+      String path = file.relativePath!;
+      filePath = path;
     });
-  }
-
-  Future<File> compressImage(String base64Data) async {
-    final decodedBytes = img.decodeImage(base64Decode(base64Data))!;
-    final resizedImage = img.copyResize(decodedBytes, width: 500);
-    final Uint8List uint8list = img.encodeJpg(resizedImage, quality: 85);
-
-    final blob = Blob([uint8list]);
-    final file = File([blob], 'compressed_image.jpg');
-
-    return file;
   }
 
   void openColorPicker() {
@@ -110,12 +79,46 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
   }
 
   void saveData() {
+    // make API call to save the file with the file path to S3 bucket
+    AwsS3.uploadFile(
+        accessKey: "AKxxxxxxxxxxxxx",
+        secretKey: "xxxxxxxxxxxxxxxxxxxxxxxxxx",
+        file:  Blob([fileData]),,
+        bucket: "bucket_name",
+        region: "us-east-2",
+        metadata: {"test": "test"} // optional
+        );
+
     int millisecondsSinceEpoch = DateTime.now().millisecondsSinceEpoch;
-    // TODO this id comes from the backend
-    Event event = Event(1, name, description, selectedColor.value, selectedImage!, millisecondsSinceEpoch);
+    Event event = Event(1, name, description, selectedColor.value, rawUrlFile!, millisecondsSinceEpoch);
     widget.onSave(event);
     Navigator.of(context).pop();
   }
+
+  void uploadFileToS3(String filePath) {
+  final file = FileUploadInputElement().files?.first;
+  
+  final reader = FileReader();
+  
+  reader.onLoadEnd.listen((e) {
+    final Uint8List fileData = reader.result as Uint8List;
+    
+    final fileBlob = Blob([fileData]);
+    final convertedFile = File([fileBlob], file?.name ?? 'file.txt');
+    
+    // Pass convertedFile as a File to the upload function
+    AwsS3.uploadFile(
+      accessKey: "AKxxxxxxxxxxxxx",
+      secretKey: "xxxxxxxxxxxxxxxxxxxxxxxxxx",
+      file: convertedFile,
+      bucket: "bucket_name",
+      region: "us-east-2",
+      metadata: {"test": "test"} // optional
+    );
+  });
+  
+  reader.readAsArrayBuffer(file);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -173,7 +176,7 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
                     height: 24,
                     child: CircularProgressIndicator(),
                   ),
-                if (selectedImage != null) buildImage(selectedImage!),
+                if (rawUrlFile != null) Image.network(rawUrlFile!),
               ],
             ),
             const SizedBox(height: 16),

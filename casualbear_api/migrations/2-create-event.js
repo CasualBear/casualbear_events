@@ -18,8 +18,8 @@ module.exports = {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      iconFile: {
-        type: DataTypes.TEXT("long"),
+      rawUrl: {
+        type: DataTypes.STRING,
         allowNull: false,
       },
       createdAt: {

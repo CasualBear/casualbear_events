@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
     name: DataTypes.STRING,
     description: DataTypes.STRING,
     selectedColor: DataTypes.INTEGER,
-    iconFile: DataTypes.TEXT("long"),
+    rawUrl: DataTypes.STRING,
   });
 
   return Event;

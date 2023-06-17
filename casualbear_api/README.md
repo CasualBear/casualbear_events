@@ -48,9 +48,10 @@ Adding add-ons
 (6) 
  - Change door to 5000 in index.js because 3000 is occupied in heorku
             Add this on package.json
-            		“scripts”:{
-            			“start”:”nodemon index.js”
-            	}
+            		"scripts": {
+    				 "start": "node index.js",
+   					 "start:dev": "nodemon index.js"
+},  
  - git add, git commit , git push heroku master
 
 

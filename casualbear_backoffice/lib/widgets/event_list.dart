@@ -1,6 +1,5 @@
 import 'package:casualbear_backoffice/models/event.dart';
 import 'package:casualbear_backoffice/utils/date_utils.dart';
-import 'package:casualbear_backoffice/utils/image_utils.dart';
 import 'package:casualbear_backoffice/widgets/create_event_dialog.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +25,7 @@ class _EventListState extends State<EventList> {
               onSave: (event) {
                 setState(() {
                   eventList.add(Event(
-                      event.id, event.name, event.description, event.selectedColor, event.iconFile, event.createdAt));
+                      event.id, event.name, event.description, event.selectedColor, event.rawUrlFile, event.createdAt));
                 });
               });
         });
@@ -188,7 +187,7 @@ class _EventListState extends State<EventList> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                buildImage(item.iconFile)
+                                Image.network(item.rawUrlFile)
                               ],
                             ),
                             const SizedBox(height: 10),
@@ -244,5 +243,10 @@ class _EventListState extends State<EventList> {
         ],
       ),
     );
+  }
+
+  int getColor(int color) {
+    int result = (0xff << 24) | color;
+    return result;
   }
 }
