@@ -40,8 +40,7 @@ const s3 = new AWS.S3();
 // Define the route for uploading the event
 router.post("/createFile", async (req, res) => {
   try {
-    const filePath =
-      "/Users/josenobre/Desktop/casualbear_events/casualbear_api/uploads/iconFile-1686761710103-749294256";
+    const filePath = "uploads/iconFile-1686761710103-749294256";
     const bucketName = "casualbearapi-staging";
     const objectKey = "stuff.jpg";
 

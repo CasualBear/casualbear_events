@@ -1,10 +1,9 @@
-import 'dart:async';
 import 'dart:html';
-import 'package:aws_s3_upload/aws_s3_upload.dart';
-import 'package:casualbear_backoffice/models/event.dart';
+import 'package:casualbear_backoffice/network/models/event.dart';
+import 'package:casualbear_backoffice/widgets/cubit/event_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:flutter/foundation.dart';
 
 // ignore: must_be_immutable
 class CreateEventDialog extends StatefulWidget {
@@ -22,7 +21,7 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
   Color selectedColor = Colors.blue;
   String description = '';
   String? rawUrlFile;
-  String? filePath;
+  late File fileToUpload;
   bool isImageProcessing = false;
 
   @override
@@ -36,14 +35,17 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
     super.initState();
   }
 
-  Future<void> openImagePicker() async {
-    final FileUploadInputElement uploadInput = FileUploadInputElement();
+  handleFileSelection() {
+    FileUploadInputElement uploadInput = FileUploadInputElement();
     uploadInput.click();
 
-    uploadInput.onChange.listen((e) async {
-      final file = uploadInput.files!.first;
-      String path = file.relativePath!;
-      filePath = path;
+    uploadInput.onChange.listen((e) {
+      final files = uploadInput.files;
+      if (files!.length == 1) {
+        final file = files[0];
+        //final filename = file.name; // Get the file name
+        fileToUpload = file;
+      }
     });
   }
 
@@ -78,47 +80,16 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
     );
   }
 
-  void saveData() {
+  void saveData(BuildContext context) {
     // make API call to save the file with the file path to S3 bucket
-    AwsS3.uploadFile(
-        accessKey: "AKxxxxxxxxxxxxx",
-        secretKey: "xxxxxxxxxxxxxxxxxxxxxxxxxx",
-        file:  Blob([fileData]),,
-        bucket: "bucket_name",
-        region: "us-east-2",
-        metadata: {"test": "test"} // optional
-        );
 
-    int millisecondsSinceEpoch = DateTime.now().millisecondsSinceEpoch;
+    //BlocProvider.of<EventCubit>(context).createFile();
+
+    /*int millisecondsSinceEpoch = DateTime.now().millisecondsSinceEpoch;
     Event event = Event(1, name, description, selectedColor.value, rawUrlFile!, millisecondsSinceEpoch);
     widget.onSave(event);
-    Navigator.of(context).pop();
+    Navigator.of(context).pop();*/
   }
-
-  void uploadFileToS3(String filePath) {
-  final file = FileUploadInputElement().files?.first;
-  
-  final reader = FileReader();
-  
-  reader.onLoadEnd.listen((e) {
-    final Uint8List fileData = reader.result as Uint8List;
-    
-    final fileBlob = Blob([fileData]);
-    final convertedFile = File([fileBlob], file?.name ?? 'file.txt');
-    
-    // Pass convertedFile as a File to the upload function
-    AwsS3.uploadFile(
-      accessKey: "AKxxxxxxxxxxxxx",
-      secretKey: "xxxxxxxxxxxxxxxxxxxxxxxxxx",
-      file: convertedFile,
-      bucket: "bucket_name",
-      region: "us-east-2",
-      metadata: {"test": "test"} // optional
-    );
-  });
-  
-  reader.readAsArrayBuffer(file);
-}
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +129,7 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
               children: [
                 const Text('Event Logo: '),
                 GestureDetector(
-                  onTap: openImagePicker,
+                  onTap: handleFileSelection,
                   child: Container(
                     width: 30,
                     height: 30,
@@ -202,7 +173,7 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
           },
         ),
         TextButton(
-          onPressed: saveData,
+          onPressed: () => saveData(context),
           child: const Text('Save'),
         ),
       ],

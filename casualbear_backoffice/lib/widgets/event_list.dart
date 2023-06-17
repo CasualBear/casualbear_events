@@ -1,4 +1,4 @@
-import 'package:casualbear_backoffice/models/event.dart';
+import 'package:casualbear_backoffice/network/models/event.dart';
 import 'package:casualbear_backoffice/utils/date_utils.dart';
 import 'package:casualbear_backoffice/widgets/create_event_dialog.dart';
 import 'package:flutter/gestures.dart';
@@ -187,7 +187,13 @@ class _EventListState extends State<EventList> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                Image.network(item.rawUrlFile)
+                                Text(item.rawUrlFile,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                    ))
+                                // Image.network(item.rawUrlFile)
                               ],
                             ),
                             const SizedBox(height: 10),

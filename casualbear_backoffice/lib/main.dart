@@ -1,7 +1,11 @@
+import 'package:casualbear_backoffice/network/services/api_service.dart';
+import 'package:casualbear_backoffice/repositories/event_repository.dart';
 import 'package:casualbear_backoffice/screens/event_screen.dart';
 import 'package:casualbear_backoffice/screens/user_screen.dart';
+import 'package:casualbear_backoffice/widgets/cubit/event_cubit.dart';
 import 'package:casualbear_backoffice/widgets/menu_list.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,16 +17,23 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        debugShowMaterialGrid: false,
-        title: 'Flutter Demo',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          primaryColor: const Color(0xff13335d),
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<EventCubit>(
+          create: (context) => EventCubit(EventRepository(ApiService.shared)),
         ),
-        home: const MainScreen());
+      ],
+      child: MaterialApp(
+          debugShowMaterialGrid: false,
+          title: 'Flutter Demo',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            primaryColor: const Color(0xff13335d),
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+            useMaterial3: true,
+          ),
+          home: const MainScreen()),
+    );
   }
 }
 

@@ -1,0 +1,2 @@
+BASE_URL = https://casuabearapi.herokuapp.com
+IS_DEV = false
