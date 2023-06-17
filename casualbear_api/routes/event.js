@@ -2,6 +2,20 @@ const { Event } = require("../app/models");
 const router = require("express").Router();
 const path = require("path");
 const AWS = require("aws-sdk");
+const multer = require("multer");
+
+// Set up Multer for handling file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./uploads/"); // Set the destination folder for uploaded files
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, file.fieldname + "-" + uniqueSuffix); // Set the filename for the uploaded file
+  },
+});
+
+const upload = multer({ storage });
 
 // Configure AWS credentials
 AWS.config.update({
@@ -9,6 +23,9 @@ AWS.config.update({
   secretAccessKey: "HCe0seJ7KONBSs0y7vujPhtGG9iTScGuf6RQXTPO",
   region: "us-east-1",
 });
+
+// Create an S3 client instance
+const s3 = new AWS.S3();
 
 function uploadImageToS3(filePath, bucketName, objectKey) {
   // Read the image file
@@ -33,42 +50,23 @@ function uploadImageToS3(filePath, bucketName, objectKey) {
     });
   });
 }
-
-// Create an S3 client instance
-const s3 = new AWS.S3();
-
 // Define the route for uploading the event
-router.post("/createFile", async (req, res) => {
+router.post("/upload-event", upload.single("iconFile"), async (req, res) => {
   try {
-    const filePath = "uploads/iconFile-1686761710103-749294256";
+    const filePath = (
+      "/Users/josenobre/Desktop/casualbear_events/casualbear_api/uploads/" +
+      req.file.filename
+    ).trim();
     const bucketName = "casualbearapi-staging";
-    const objectKey = "stuff.jpg";
+    const objectKey = "image.jpg";
 
-    uploadImageToS3(filePath, bucketName, objectKey)
-      .then((s3Url) => {
-        console.log("Image uploaded successfully!");
-        console.log("S3 URL:", s3Url);
-        res.status(201).json({ url: s3Url });
-      })
-      .catch((err) => {
-        console.error("Error uploading image:", err);
-        res.status(500).json({ error: err });
-      });
-  } catch (error) {
-    console.error("Error creating event:", error);
-    res.status(500).json({ error: error });
-  }
-});
+    const s3Url = await uploadImageToS3(filePath, bucketName, objectKey);
 
-// Define the route for uploading the event
-router.post("/upload-event", async (req, res) => {
-  try {
-    // Create a new event in the database
     const event = await Event.create({
       name: req.body.name,
-      description: req.body.description,
+      description: "event description",
       selectedColor: req.body.selectedColor,
-      rawUrl: req.body.rawUrl,
+      rawUrl: s3Url,
     });
 
     res.status(201).json(event);
