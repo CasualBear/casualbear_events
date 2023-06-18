@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:casualbear_backoffice/network/models/event.dart';
 import 'package:casualbear_backoffice/repositories/event_repository.dart';
 import 'package:flutter/material.dart';
 part 'event_state.dart';
@@ -14,6 +15,16 @@ class EventCubit extends Cubit<EventState> {
       emit(EventCreationLoaded());
     } catch (e) {
       emit(EventCreationError());
+    }
+  }
+
+  void getEvents() async {
+    emit(EventGetLoading());
+    try {
+      List<Event> response = await repository.getEvent();
+      emit(EventGetLoaded(response));
+    } catch (e) {
+      emit(EventGetError());
     }
   }
 }

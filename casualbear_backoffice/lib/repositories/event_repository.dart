@@ -1,3 +1,4 @@
+import 'package:casualbear_backoffice/network/models/event.dart';
 import 'package:casualbear_backoffice/network/services/api_service.dart';
 import '../network/services/api_error.dart';
 import 'package:dio/dio.dart';
@@ -26,6 +27,17 @@ class EventRepository {
       } else {
         rethrow;
       }
+    }
+  }
+
+  Future<List<Event>> getEvent() async {
+    try {
+      final response = await apiService.get('/api/event/events');
+      var listOfEvents = List<Event>.from(response.data['events'].map((i) => Event.fromJson(i)));
+      return listOfEvents;
+    } catch (e) {
+      print(e);
+      return [];
     }
   }
 }

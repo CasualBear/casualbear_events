@@ -57,7 +57,7 @@ class ApiNetworkInterceptor extends Interceptor {
 }
 
 class ApiService {
-  static String baseURL = 'http://localhost:8000'; //default value for testing
+  static String baseURL = 'https://casuabearapi.herokuapp.com'; //default value for testing
   static const apiVersion = '1';
   static const tokenKey = 'bedrock_token'; // This is used for local token storage
 
@@ -76,7 +76,7 @@ class ApiService {
       dio.interceptors.add(ApiNetworkInterceptor());
     }
 
-    dio.options.baseUrl = '$baseURL/$apiVersion';
+    dio.options.baseUrl = baseURL;
     dio.options.connectTimeout = const Duration(milliseconds: 10000);
     dio.options.receiveTimeout = const Duration(milliseconds: 10000);
     dio.options.sendTimeout = const Duration(milliseconds: 10000);

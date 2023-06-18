@@ -10,7 +10,8 @@ import 'dart:convert';
 // ignore: must_be_immutable
 class CreateEventDialog extends StatefulWidget {
   Event? event;
-  CreateEventDialog({Key? key, this.event}) : super(key: key);
+  Function onSaveCompleted;
+  CreateEventDialog({Key? key, this.event, required this.onSaveCompleted}) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
@@ -32,7 +33,7 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
       name = widget.event!.name;
       selectedColor = Color(widget.event!.selectedColor);
       description = widget.event!.description;
-      rawUrlFile = widget.event!.rawUrlFile;
+      rawUrlFile = widget.event!.rawUrl;
     }
     super.initState();
   }
@@ -181,10 +182,10 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
               current is EventCreationLoading || current is EventCreationLoaded || current is EventCreationError,
           listener: (context, state) {
             if (state is EventCreationLoaded) {
-              Navigator.pop(context);
+              widget.onSaveCompleted();
             } else if (state is EventCreationError) {
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text("Error while creting event, try again!"),
+                content: Text("Error while creating event, try again!"),
               ));
             }
           },
