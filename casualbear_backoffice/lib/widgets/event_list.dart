@@ -20,14 +20,7 @@ class _EventListState extends State<EventList> {
     showDialog(
         context: context,
         builder: (BuildContext context) {
-          return CreateEventDialog(
-              event: event,
-              onSave: (event) {
-                setState(() {
-                  eventList.add(Event(
-                      event.id, event.name, event.description, event.selectedColor, event.rawUrlFile, event.createdAt));
-                });
-              });
+          return CreateEventDialog(event: event);
         });
   }
 
@@ -187,13 +180,13 @@ class _EventListState extends State<EventList> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                Text(item.rawUrlFile,
-                                    style: TextStyle(
+                                Text(item.rawUrlFile ?? '',
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,
-                                    ))
-                                // Image.network(item.rawUrlFile)
+                                    )),
+                                Image.network(item.rawUrlFile ?? '')
                               ],
                             ),
                             const SizedBox(height: 10),

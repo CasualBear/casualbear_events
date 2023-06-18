@@ -1,15 +1,20 @@
-import 'dart:html';
 import 'package:casualbear_backoffice/network/models/event.dart';
-import 'package:casualbear_backoffice/widgets/cubit/event_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'cubit/event_cubit.dart';
+import 'package:dio/dio.dart' as dio;
+import 'dart:typed_data';
+import 'dart:html' as html;
+import 'package:http_parser/http_parser.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 // ignore: must_be_immutable
 class CreateEventDialog extends StatefulWidget {
-  final Function(Event event) onSave;
   Event? event;
-  CreateEventDialog({Key? key, required this.onSave, this.event}) : super(key: key);
+  CreateEventDialog({Key? key, this.event}) : super(key: key);
 
   @override
   // ignore: library_private_types_in_public_api
@@ -17,12 +22,13 @@ class CreateEventDialog extends StatefulWidget {
 }
 
 class _CreateEventDialogState extends State<CreateEventDialog> {
-  String name = '';
+  String? name;
   Color selectedColor = Colors.blue;
-  String description = '';
+  String? description;
   String? rawUrlFile;
-  late File fileToUpload;
-  bool isImageProcessing = false;
+
+  List<int>? selectedFile;
+  Uint8List? _bytesData;
 
   @override
   void initState() {
@@ -35,17 +41,24 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
     super.initState();
   }
 
-  handleFileSelection() {
-    FileUploadInputElement uploadInput = FileUploadInputElement();
+  void pickFiles() async {
+    html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
+    uploadInput.multiple = true;
+    uploadInput.draggable = true;
     uploadInput.click();
 
-    uploadInput.onChange.listen((e) {
+    uploadInput.onChange.listen((event) {
       final files = uploadInput.files;
-      if (files!.length == 1) {
-        final file = files[0];
-        //final filename = file.name; // Get the file name
-        fileToUpload = file;
-      }
+      final file = files![0];
+      final reader = html.FileReader();
+
+      reader.onLoadEnd.listen((event) {
+        setState(() {
+          _bytesData = const Base64Decoder().convert(reader.result.toString().split(",").last);
+          selectedFile = _bytesData;
+        });
+      });
+      reader.readAsDataUrl(file);
     });
   }
 
@@ -80,90 +93,122 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
     );
   }
 
-  void saveData(BuildContext context) {
-    // make API call to save the file with the file path to S3 bucket
+  Future saveData(BuildContext context) async {
+    if (name != null && description != null && selectedFile != null) {
+      var url = Uri.parse("https://casuabearapi.herokuapp.com/api/event/upload-event");
+      var request = http.MultipartRequest("POST", url);
 
-    //BlocProvider.of<EventCubit>(context).createFile();
+      request.files.add(await http.MultipartFile.fromBytes('iconFile', selectedFile!,
+          contentType: MediaType('application', 'json'), filename: "icon"));
 
-    /*int millisecondsSinceEpoch = DateTime.now().millisecondsSinceEpoch;
-    Event event = Event(1, name, description, selectedColor.value, rawUrlFile!, millisecondsSinceEpoch);
-    widget.onSave(event);
-    Navigator.of(context).pop();*/
+      request.fields['name'] = 'John Doe'; // Add name field
+      request.fields['description'] = 'Sample description';
+      request.fields['selectedColor'] = '24234342424';
+
+      request.send().then((response) {
+        if (response.statusCode == 201) {
+          print("File uploaded successfully");
+        } else {
+          print('file upload failed');
+        }
+      });
+
+      // ignore: use_build_context_synchronously
+      Navigator.of(context).pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Please fill all the required data"),
+      ));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Enter Event Details'),
-      content: SingleChildScrollView(
-        child: Column(
-          children: [
-            TextField(
-              controller: TextEditingController()..text = name,
-              decoration: const InputDecoration(
-                labelText: 'Name',
-              ),
-              onChanged: (value) {
-                setState(() {
-                  name = value;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            Row(
+      content: BlocConsumer<EventCubit, EventState>(
+        buildWhen: (previous, current) =>
+            current is EventCreationLoading || current is EventCreationLoaded || current is EventCreationError,
+        listenWhen: (previous, current) =>
+            current is EventCreationLoading || current is EventCreationLoaded || current is EventCreationError,
+        listener: (context, state) {
+          if (state is EventCreationLoaded) {
+            Navigator.pop(context);
+          } else if (state is EventCreationError) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text("Error while creting event, try again!"),
+            ));
+          }
+        },
+        builder: (context, state) {
+          if (state is EventCreationLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else {
+            return SingleChildScrollView(
+                child: Column(
               children: [
-                const Text('Color: '),
-                GestureDetector(
-                  onTap: openColorPicker,
-                  child: Container(
-                    width: 30,
-                    height: 30,
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    color: selectedColor,
+                TextField(
+                  controller: TextEditingController()..text = name ?? '',
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
                   ),
+                  onChanged: (value) {
+                    setState(() {
+                      name = value;
+                    });
+                  },
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                const Text('Event Logo: '),
-                GestureDetector(
-                  onTap: handleFileSelection,
-                  child: Container(
-                    width: 30,
-                    height: 30,
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      border: Border.all(color: Colors.grey),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Text('Color: '),
+                    GestureDetector(
+                      onTap: openColorPicker,
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        color: selectedColor,
+                      ),
                     ),
-                    child: const Icon(Icons.attach_file),
-                  ),
+                  ],
                 ),
-                if (isImageProcessing)
-                  const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Text('Event Logo: '),
+                    GestureDetector(
+                      onTap: pickFiles,
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          border: Border.all(color: Colors.grey),
+                        ),
+                        child: const Icon(Icons.attach_file),
+                      ),
+                    ),
+                    if (rawUrlFile != null) Image.network(rawUrlFile!),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: TextEditingController()..text = description ?? '',
+                  decoration: const InputDecoration(
+                    labelText: 'Description',
                   ),
-                if (rawUrlFile != null) Image.network(rawUrlFile!),
+                  onChanged: (value) {
+                    setState(() {
+                      description = value;
+                    });
+                  },
+                ),
               ],
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: TextEditingController()..text = description,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-              ),
-              onChanged: (value) {
-                setState(() {
-                  description = value;
-                });
-              },
-            ),
-          ],
-        ),
+            ));
+          }
+        },
       ),
       actions: [
         TextButton(

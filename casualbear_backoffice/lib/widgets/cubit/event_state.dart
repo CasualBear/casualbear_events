@@ -5,8 +5,8 @@ abstract class EventState {}
 
 class EventInitial extends EventState {}
 
-class FileCreationLoading extends EventState {}
+class EventCreationLoading extends EventState {}
 
-class FileCreationLoaded extends EventState {}
+class EventCreationLoaded extends EventState {}
 
-class FileCreationError extends EventState {}
+class EventCreationError extends EventState {}
