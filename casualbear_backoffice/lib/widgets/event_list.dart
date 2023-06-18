@@ -215,19 +215,13 @@ class _EventListState extends State<EventList> {
             children: [
               const SizedBox(width: 10),
               const Text(
-                'Icon ',
+                'Icon : ',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Text(event.rawUrl ?? '',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                  )),
-              Image.network(event.rawUrl ?? '')
+              Image.network(event.rawUrl ?? '', width: 100, height: 100)
             ],
           ),
           const SizedBox(height: 10),

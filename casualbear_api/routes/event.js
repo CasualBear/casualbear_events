@@ -87,7 +87,7 @@ router.post("/upload-event", upload.single("iconFile"), async (req, res) => {
 
     const event = await Event.create({
       name: req.body.name,
-      description: "event description",
+      description: req.body.description,
       selectedColor: req.body.selectedColor,
       rawUrl: s3Url,
     });
@@ -131,6 +131,80 @@ router.get("/events/:eventId", async (req, res) => {
     res
       .status(500)
       .json({ error: "An error occurred while retrieving the event." });
+  }
+});
+
+// DELETE method to delete an event
+router.delete("/events/:eventId", async (req, res) => {
+  try {
+    const bucketName = "casualbearapi-staging";
+    const eventId = req.params.eventId;
+
+    // Find the event by its ID in the database
+    const event = await Event.findByPk(eventId);
+
+    if (!event) {
+      return res.status(404).json({ error: "Event not found." });
+    }
+
+    // Delete the event from the database
+    await event.destroy();
+
+    // Delete the image from the S3 bucket
+    const objectKey = event.rawUrl.split("/").pop(); // Extract the object key from the S3 URL
+    await s3.deleteObject({ Bucket: bucketName, Key: objectKey }).promise();
+
+    res.status(204).end(); // Return a success response with no content
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    res.status(500).json({ error: "Failed to delete event" });
+  }
+});
+
+router.put("/events/:eventId", upload.single("iconFile"), async (req, res) => {
+  try {
+    const eventId = req.params.eventId;
+
+    // Find the event by its ID in the database
+    const event = await Event.findByPk(eventId);
+
+    if (!event) {
+      return res.status(404).json({ error: "Event not found." });
+    }
+
+    // Update the event properties
+    event.name = req.body.name;
+    event.description = req.body.description;
+    event.selectedColor = req.body.selectedColor;
+
+    // Check if a new image is uploaded
+    if (req.file) {
+      const filePath = req.file.path; // Path of the newly uploaded image
+      const bucketName = "casualbearapi-staging";
+      const randomKey = generateRandomKey();
+      const objectKey = randomKey + ".jpg";
+
+      // Delete the existing image from the S3 bucket
+      const existingObjectKey = event.rawUrl.split("/").pop();
+      await s3
+        .deleteObject({ Bucket: bucketName, Key: existingObjectKey })
+        .promise();
+
+      // Upload the new image to the S3 bucket
+      const s3Url = await uploadImageToS3(filePath, bucketName, objectKey);
+
+      // Update the event's rawUrl with the S3 URL of the new image
+      event.rawUrl = s3Url;
+    }
+
+    // Save the updated event
+    await event.save();
+
+    // Return the updated event as the response
+    res.json({ event });
+  } catch (error) {
+    console.error("Error updating event:", error);
+    res.status(500).json({ error: "Failed to update event" });
   }
 });
 

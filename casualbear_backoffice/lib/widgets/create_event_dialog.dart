@@ -93,7 +93,7 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
   Future saveData(BuildContext context) async {
     if (name != null && description != null && selectedFile != null) {
       BlocProvider.of<EventCubit>(context)
-          .createEvent(selectedFile!, name!, description!, selectedColor.value.toString());
+          .createEvent(selectedFile!, name!, description!, selectedColor.value.toRadixString(16).padLeft(8, '0'));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("Please fill all the required data"),
@@ -201,9 +201,5 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
         ),
       ],
     );
-  }
-
-  String colorToHex(Color color) {
-    return '#${color.value.toRadixString(16).padLeft(8, '0')}';
   }
 }
