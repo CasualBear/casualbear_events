@@ -53,10 +53,18 @@ function uploadImageToS3(filePath, bucketName, objectKey) {
 // Define the route for uploading the event
 router.post("/upload-event", upload.single("iconFile"), async (req, res) => {
   try {
+    // Get the base directory path
+    const baseDirectory = __dirname;
+
+    // Join the base directory path with "uploads" folder
+    const uploadsDirectory = path.join(baseDirectory, "uploads");
+
     const filePath = (
-      "/Users/josenobre/Desktop/casualbear_events/casualbear_api/uploads/" +
+      uploadsDirectory.replace("/routes", "") +
+      "/" +
       req.file.filename
-    ).trim();
+    ) // TODO change this to fetch the path and send to S3
+      .trim();
     const bucketName = "casualbearapi-staging";
     const objectKey = "image.jpg";
 
