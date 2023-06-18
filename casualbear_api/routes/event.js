@@ -27,6 +27,20 @@ AWS.config.update({
 // Create an S3 client instance
 const s3 = new AWS.S3();
 
+function generateRandomKey() {
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const length = 10;
+  let key = "";
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    key += characters[randomIndex];
+  }
+
+  return key;
+}
+
 function uploadImageToS3(filePath, bucketName, objectKey) {
   // Read the image file
   const fs = require("fs");
@@ -66,7 +80,8 @@ router.post("/upload-event", upload.single("iconFile"), async (req, res) => {
     ) // TODO change this to fetch the path and send to S3
       .trim();
     const bucketName = "casualbearapi-staging";
-    const objectKey = "image.jpg";
+    const randomKey = generateRandomKey();
+    const objectKey = randomKey + ".jpg";
 
     const s3Url = await uploadImageToS3(filePath, bucketName, objectKey);
 
