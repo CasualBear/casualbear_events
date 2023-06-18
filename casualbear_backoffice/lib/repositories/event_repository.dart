@@ -1,6 +1,7 @@
 import 'package:casualbear_backoffice/network/services/api_service.dart';
 import '../network/services/api_error.dart';
 import 'package:dio/dio.dart';
+import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
 class EventRepository {
@@ -8,19 +9,17 @@ class EventRepository {
 
   EventRepository(this.apiService);
 
-  createEvent(List<int> file, String fileName, String name, String description, String color) async {
+  createEvent(List<int> selectedFile, String name, String description, String color) async {
     try {
-      FormData formData = FormData.fromMap({
-        "file": MultipartFile.fromBytes(
-          file,
-          filename: fileName,
-          contentType: MediaType("image", "png"),
-        ),
-        "name": name,
-        "description": description,
-        "selectedColor": color,
-      });
-      await apiService.post("/api/event/upload-event", body: formData);
+      var url = Uri.parse("https://casuabearapi.herokuapp.com/api/event/upload-event");
+      var request = http.MultipartRequest("POST", url);
+      request.files.add(await http.MultipartFile.fromBytes('iconFile', selectedFile,
+          contentType: MediaType('application', 'json'), filename: "icon"));
+
+      request.fields['name'] = name; // Add name field
+      request.fields['description'] = description;
+      request.fields['selectedColor'] = color;
+      await request.send();
     } on DioException catch (e) {
       if (e.response != null) {
         throw ApiError.fromJson(e.response!.data['error']);
