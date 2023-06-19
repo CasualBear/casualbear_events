@@ -18,6 +18,16 @@ class EventCubit extends Cubit<EventState> {
     }
   }
 
+  void updateEvent(List<int> selectedFile, String name, String description, String color, String eventId) async {
+    emit(EventCreationLoading());
+    try {
+      await repository.updateEvent(selectedFile, name, description, color, eventId);
+      emit(EventCreationLoaded());
+    } catch (e) {
+      emit(EventCreationError());
+    }
+  }
+
   void getEvents() async {
     emit(EventGetLoading());
     try {
@@ -25,6 +35,16 @@ class EventCubit extends Cubit<EventState> {
       emit(EventGetLoaded(response));
     } catch (e) {
       emit(EventGetError());
+    }
+  }
+
+  void deleteEvent(String eventId) async {
+    emit(EventDeleteLoading());
+    try {
+      await repository.deleteEvent(eventId);
+      emit(EventDeleteLoaded());
+    } catch (e) {
+      emit(EventDeleteError());
     }
   }
 }

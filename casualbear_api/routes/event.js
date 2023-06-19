@@ -85,10 +85,12 @@ router.post("/upload-event", upload.single("iconFile"), async (req, res) => {
 
     const s3Url = await uploadImageToS3(filePath, bucketName, objectKey);
 
+    const selectedColorInt = parseInt(req.body.selectedColor);
+
     const event = await Event.create({
       name: req.body.name,
       description: req.body.description,
-      selectedColor: req.body.selectedColor,
+      selectedColor: selectedColorInt,
       rawUrl: s3Url,
     });
 
@@ -175,7 +177,7 @@ router.put("/events/:eventId", upload.single("iconFile"), async (req, res) => {
     // Update the event properties
     event.name = req.body.name;
     event.description = req.body.description;
-    event.selectedColor = req.body.selectedColor;
+    event.selectedColor = parseInt(req.body.selectedColor);
 
     // Check if a new image is uploaded
     if (req.file) {

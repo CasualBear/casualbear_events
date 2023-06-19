@@ -30,6 +30,26 @@ class EventRepository {
     }
   }
 
+  updateEvent(List<int> selectedFile, String name, String description, String color, String eventId) async {
+    try {
+      var url = Uri.parse("https://casuabearapi.herokuapp.com/api/event/events/$eventId");
+      var request = http.MultipartRequest("PUT", url);
+      request.files.add(await http.MultipartFile.fromBytes('iconFile', selectedFile,
+          contentType: MediaType('application', 'json'), filename: "icon"));
+
+      request.fields['name'] = name; // Add name field
+      request.fields['description'] = description;
+      request.fields['selectedColor'] = color;
+      await request.send();
+    } on DioException catch (e) {
+      if (e.response != null) {
+        throw ApiError.fromJson(e.response!.data['error']);
+      } else {
+        rethrow;
+      }
+    }
+  }
+
   Future<List<Event>> getEvent() async {
     try {
       final response = await apiService.get('/api/event/events');
@@ -38,6 +58,14 @@ class EventRepository {
     } catch (e) {
       print(e);
       return [];
+    }
+  }
+
+  deleteEvent(String eventId) async {
+    try {
+      await apiService.delete('/api/event/events/$eventId');
+    } catch (e) {
+      print(e);
     }
   }
 }

@@ -237,11 +237,8 @@ class _EventListState extends State<EventList> {
                     children: [
                       Text(
                         'Editar'.toUpperCase(),
-                        style: TextStyle(
-                            decoration: TextDecoration.underline,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor),
+                        style:
+                            TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
                       ),
                       const SizedBox(width: 5),
                       Icon(Icons.edit, color: Theme.of(context).primaryColor)
@@ -249,20 +246,42 @@ class _EventListState extends State<EventList> {
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 10),
-                child: Row(
-                  children: [
-                    Text(
-                      'Delete Event'.toUpperCase(),
-                      style: const TextStyle(
-                          fontSize: 16,
-                          decoration: TextDecoration.underline,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red),
-                    ),
-                    const Icon(Icons.delete, color: Colors.red)
-                  ],
+              GestureDetector(
+                onTap: () {
+                  BlocProvider.of<EventCubit>(context).deleteEvent(event.id.toString());
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 10),
+                  child: Row(
+                    children: [
+                      BlocConsumer<EventCubit, EventState>(
+                        listenWhen: (previous, current) => current is EventDeleteError || current is EventDeleteLoaded,
+                        buildWhen: (previous, current) =>
+                            current is EventDeleteError ||
+                            current is EventDeleteLoading ||
+                            current is EventDeleteLoaded,
+                        listener: (context, state) {
+                          if (state is EventDeleteError) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                              content: Text("Error while deleting event, try again!"),
+                            ));
+                          } else if (state is EventDeleteLoaded) {
+                            BlocProvider.of<EventCubit>(context).getEvents();
+                          }
+                        },
+                        builder: (context, state) {
+                          if (state is EventDeleteLoading) {
+                            return const CircularProgressIndicator();
+                          }
+                          return Text(
+                            'Delete Event'.toUpperCase(),
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
+                          );
+                        },
+                      ),
+                      const Icon(Icons.delete, color: Colors.red)
+                    ],
+                  ),
                 ),
               ),
             ],

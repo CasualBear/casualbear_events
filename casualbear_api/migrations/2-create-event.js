@@ -15,7 +15,7 @@ module.exports = {
         allowNull: false,
       },
       selectedColor: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false,
       },
       rawUrl: {

@@ -57,6 +57,8 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
       });
       reader.readAsDataUrl(file);
     });
+
+    setState(() {});
   }
 
   void openColorPicker() {
@@ -92,8 +94,13 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
 
   Future saveData(BuildContext context) async {
     if (name != null && description != null && selectedFile != null) {
-      BlocProvider.of<EventCubit>(context)
-          .createEvent(selectedFile!, name!, description!, selectedColor.value.toRadixString(16).padLeft(8, '0'));
+      if (widget.event != null) {
+        BlocProvider.of<EventCubit>(context).updateEvent(
+            selectedFile!, name!, description!, selectedColor.value.toString(), widget.event!.id.toString());
+      } else {
+        BlocProvider.of<EventCubit>(context)
+            .createEvent(selectedFile!, name!, description!, selectedColor.value.toString());
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("Please fill all the required data"),
@@ -151,7 +158,8 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
                   child: const Icon(Icons.attach_file),
                 ),
               ),
-              if (rawUrlFile != null) Image.network(rawUrlFile!),
+              if (rawUrlFile != null || _bytesData != null)
+                const Text('Imagem anexada', style: TextStyle(color: Colors.black)),
             ],
           ),
           const SizedBox(height: 16),
