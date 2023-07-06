@@ -178,14 +178,14 @@ class _EventListState extends State<EventList> {
                 ),
                 children: [
                   TextSpan(
-                    text: 'www.abola.pt',
+                    text: 'https://cblandingpage.web.app#eventId=${event.id}',
                     style: const TextStyle(
                       decoration: TextDecoration.underline,
                       color: Colors.blue,
                     ),
                     recognizer: TapGestureRecognizer()
                       ..onTap = () {
-                        launch('www.abola.pt'); // Open the URL when tapped
+                        launch('https://cblandingpage.web.app#eventId=${event.id}'); // Open the URL when tapped
                       },
                   ),
                 ],

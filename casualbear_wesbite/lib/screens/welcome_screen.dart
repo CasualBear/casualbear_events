@@ -1,12 +1,11 @@
-import 'dart:html';
-import 'package:casualbear_website/network/models/user.dart';
 import 'package:casualbear_website/screens/cubit/generic_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 class WelcomeScreen extends StatefulWidget {
-  const WelcomeScreen({Key? key}) : super(key: key);
+  final String eventId;
+  const WelcomeScreen({Key? key, required this.eventId}) : super(key: key);
 
   @override
   State<WelcomeScreen> createState() => _WelcomeScreenState();
@@ -18,14 +17,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   void initState() {
-    BlocProvider.of<GenericCubit>(context).getEvents('11');
+    BlocProvider.of<GenericCubit>(context).getEvents(widget.eventId);
     super.initState();
-  }
-
-  Map<String, String> getQueryParameters() {
-    Uri currentUri = Uri.parse(window.location.href);
-    Map<String, String> queryParams = currentUri.queryParameters;
-    return queryParams;
   }
 
   @override
@@ -170,7 +163,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           } else if (state is EventGetLoading) {
             return const CircularProgressIndicator();
           } else {
-            return Container();
+            return const Text("Event not found", style: TextStyle(color: Colors.black));
           }
         },
       ),
