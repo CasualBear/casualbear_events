@@ -1,11 +1,10 @@
 import 'package:casualbear_backoffice/network/models/event.dart';
+import 'package:casualbear_backoffice/screens/events/cubit/event_cubit.dart';
 import 'package:casualbear_backoffice/widgets/create_event_dialog.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import 'cubit/event_cubit.dart';
 
 class EventList extends StatefulWidget {
   const EventList({super.key});

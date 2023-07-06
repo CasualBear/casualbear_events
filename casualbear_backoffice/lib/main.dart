@@ -1,11 +1,13 @@
 import 'package:casualbear_backoffice/network/services/api_service.dart';
 import 'package:casualbear_backoffice/repositories/event_repository.dart';
-import 'package:casualbear_backoffice/screens/event_screen.dart';
+import 'package:casualbear_backoffice/screens/events/cubit/event_cubit.dart';
+import 'package:casualbear_backoffice/screens/events/event_screen.dart';
 import 'package:casualbear_backoffice/screens/user_screen.dart';
-import 'package:casualbear_backoffice/widgets/cubit/event_cubit.dart';
 import 'package:casualbear_backoffice/widgets/menu_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'screens/authentication/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,7 +34,7 @@ class MyApp extends StatelessWidget {
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true,
           ),
-          home: const MainScreen()),
+          home: LoginPage()),
     );
   }
 }
