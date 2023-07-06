@@ -23,6 +23,8 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
   Color selectedColor = Colors.blue;
   String? description;
   String? rawUrlFile;
+  late TextEditingController descriptionController;
+  late TextEditingController nameController;
 
   List<int>? selectedFile;
   Uint8List? _bytesData;
@@ -30,10 +32,15 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
   @override
   void initState() {
     if (widget.event != null) {
+      descriptionController = TextEditingController(text: widget.event!.description);
+      nameController = TextEditingController(text: widget.event!.name);
       name = widget.event!.name;
       selectedColor = Color(widget.event!.selectedColor);
       description = widget.event!.description;
       rawUrlFile = widget.event!.rawUrl;
+    } else {
+      descriptionController = TextEditingController();
+      nameController = TextEditingController();
     }
     super.initState();
   }
@@ -93,13 +100,13 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
   }
 
   Future saveData(BuildContext context) async {
-    if (name != null && description != null && selectedFile != null) {
+    if (nameController.text.isNotEmpty && descriptionController.text.isNotEmpty && selectedFile != null) {
       if (widget.event != null) {
-        BlocProvider.of<EventCubit>(context).updateEvent(
-            selectedFile!, name!, description!, selectedColor.value.toString(), widget.event!.id.toString());
+        BlocProvider.of<EventCubit>(context).updateEvent(selectedFile!, nameController.text, descriptionController.text,
+            selectedColor.value.toString(), widget.event!.id.toString());
       } else {
-        BlocProvider.of<EventCubit>(context)
-            .createEvent(selectedFile!, name!, description!, selectedColor.value.toString());
+        BlocProvider.of<EventCubit>(context).createEvent(
+            selectedFile!, nameController.text, descriptionController.text, selectedColor.value.toString());
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -116,15 +123,10 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
           child: Column(
         children: [
           TextField(
-            controller: TextEditingController()..text = name ?? '',
+            controller: nameController,
             decoration: const InputDecoration(
               labelText: 'Name',
             ),
-            onChanged: (value) {
-              setState(() {
-                name = value;
-              });
-            },
           ),
           const SizedBox(height: 16),
           Row(
@@ -164,15 +166,10 @@ class _CreateEventDialogState extends State<CreateEventDialog> {
           ),
           const SizedBox(height: 16),
           TextField(
-            controller: TextEditingController()..text = description ?? '',
+            controller: descriptionController,
             decoration: const InputDecoration(
               labelText: 'Description',
             ),
-            onChanged: (value) {
-              setState(() {
-                description = value;
-              });
-            },
           ),
         ],
       )),
