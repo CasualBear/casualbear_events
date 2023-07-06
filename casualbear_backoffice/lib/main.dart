@@ -1,5 +1,8 @@
+import 'package:casualbear_backoffice/local_storage.dart';
 import 'package:casualbear_backoffice/network/services/api_service.dart';
+import 'package:casualbear_backoffice/repositories/authentication_repository.dart';
 import 'package:casualbear_backoffice/repositories/event_repository.dart';
+import 'package:casualbear_backoffice/screens/authentication/cubit/authentication_cubit.dart';
 import 'package:casualbear_backoffice/screens/events/cubit/event_cubit.dart';
 import 'package:casualbear_backoffice/screens/events/event_screen.dart';
 import 'package:casualbear_backoffice/screens/user_screen.dart';
@@ -24,6 +27,9 @@ class MyApp extends StatelessWidget {
         BlocProvider<EventCubit>(
           create: (context) => EventCubit(EventRepository(ApiService.shared)),
         ),
+        BlocProvider<AuthenticationCubit>(
+          create: (context) => AuthenticationCubit(AuthenticationRepository(ApiService.shared)),
+        ),
       ],
       child: MaterialApp(
           debugShowMaterialGrid: false,
@@ -34,7 +40,7 @@ class MyApp extends StatelessWidget {
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
             useMaterial3: true,
           ),
-          home: LoginPage()),
+          home: getToken() != null ? const MainScreen() : const LoginPage()),
     );
   }
 }
